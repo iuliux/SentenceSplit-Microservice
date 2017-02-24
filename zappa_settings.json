@@ -1,6 +1,6 @@
 {
     "dev": {
-        "django_settings": "sentence_split.settings", 
+        "django_settings": "sentence_split.dev_settings",
         "s3_bucket": "zappa-a5q9128wh"
     }
 }

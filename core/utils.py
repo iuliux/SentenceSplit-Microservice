@@ -52,7 +52,7 @@ sentence_split_re = re.compile(
     # Those 2 again for the case of <Text "quoted." New sent.>
     ur'(?<=[^A-Z].[.?!]["\'“”])\s+(?=[A-Z])|(?<=[^A-Z].[.?!]["\'“”])\s*[\n\r]+|[\n\r]\s*[\n\r]+|'
     # And the case of ALL-CAPS
-    ur'(?<=[^a-z][.?!])[\s\n\r]+(?=[A-Z]))',
+    ur'(?<=[^a-z][.?!])\s+(?=[A-Z])|(?<=[^a-z][.?!])\s*[\n\r]+|[\n\r]\s*[\n\r]+)',
     re.UNICODE
 )
 

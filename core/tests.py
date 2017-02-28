@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 
+import json
+import mock
+
+from django.http import JsonResponse
 from django.test import TestCase
 
 from .utils import split_sentences
+from .views import sentence_split
 
 
 class SentenceSplitTest(TestCase):
@@ -122,3 +127,73 @@ PLEASE READ THESE TERMS OF SERVICE CAREFULLY. THESE TERMS OF SERVICE SETS FORTH 
         sentences = split_sentences(txt)
         self.assertEqual(len(sentences), 6)
         self.assertEqual(''.join(sentences), txt)
+
+
+class APITest(TestCase):
+
+    @staticmethod
+    def mock_request(method='POST',
+                     content_type='application/json',
+                     META={'HTTP_X_ACCESS_TOKEN': 'qwerty'},
+                     body='{"text": "Hello, world!  My name is Gevorg. I am fond of sentence splitting."}'):
+        request = mock.MagicMock()
+        request.method = method
+        request.content_type = content_type
+        request.META = META
+        request.body = body
+        return request
+
+    def assert_failure(self, response, expected_data, expected_status_code):
+        self.assertIsInstance(response, JsonResponse)
+        self.assertEqual(expected_data, json.loads(response.content))
+        self.assertEqual(expected_status_code, response.status_code)
+
+    def assert_success(self, response, expected_data):
+        self.assertIsInstance(response, JsonResponse)
+        self.assertEqual(expected_data, json.loads(response.content))
+        self.assertEqual(200, response.status_code)
+
+    def test_not_post(self):
+        for method in ['GET', 'DELETE', 'PUT']:
+            request = self.mock_request(method=method)
+            response = sentence_split(request)
+            self.assert_failure(response, {"error": "POST method expected"}, 400)
+
+    def test_not_json(self):
+        for content_type in ['text/plain', 'application/javascript', 'application/xml', 'text/xml', 'text/html']:
+            request = self.mock_request(content_type=content_type)
+            response = sentence_split(request)
+            self.assert_failure(response, {"error": "application/json content type expected"}, 400)
+
+    def test_no_token(self):
+        request = self.mock_request(META={'foo': 'bar'})
+        response = sentence_split(request)
+        self.assert_failure(response, {"error": "x-access-token header expected"}, 400)
+
+    @mock.patch('core.models.AccessToken.objects.filter', return_value=False)
+    def test_invalid_token(self, access_token_filter_mock):
+        request = self.mock_request()
+        response = sentence_split(request)
+        access_token_filter_mock.assert_called_once_with(value='qwerty')
+        self.assert_failure(response, {"error": "access denied (invalid token)"}, 403)
+
+    @mock.patch('core.models.AccessToken.objects.filter', return_value=True)
+    def test_invalid_body(self, access_token_filter_mock):
+        request = self.mock_request(body='Some invalid JSON string')
+        response = sentence_split(request)
+        access_token_filter_mock.assert_called_once_with(value='qwerty')
+        self.assert_failure(response, {"error": "JSON body expected"}, 400)
+
+    @mock.patch('core.models.AccessToken.objects.filter', return_value=True)
+    def test_no_text(self, access_token_filter_mock):
+        request = self.mock_request(body='{"foo": "bar"}')
+        response = sentence_split(request)
+        access_token_filter_mock.assert_called_once_with(value='qwerty')
+        self.assert_failure(response, {"error": "'text' key in body expected"}, 400)
+
+    @mock.patch('core.models.AccessToken.objects.filter', return_value=True)
+    def test_ok(self, access_token_filter_mock):
+        request = self.mock_request()
+        response = sentence_split(request)
+        access_token_filter_mock.assert_called_once_with(value='qwerty')
+        self.assert_success(response, ["Hello, world!  ", "My name is Gevorg. ", "I am fond of sentence splitting."])

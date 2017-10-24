@@ -18,3 +18,7 @@ In order to push changes to an already existing and deployed environment (let it
 ```shell
 zappa update env
 ```
+After updating the environment make sure to check that the tests still pass by running
+```shell
+zappa manage env "test core"
+```

@@ -3,8 +3,8 @@ import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from .models import AccessToken
-from .utils import split_sentences
+from core.models import AccessToken
+from core.utils import split_sentences
 
 
 @csrf_exempt

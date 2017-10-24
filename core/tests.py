@@ -169,15 +169,12 @@ PLEASE READ THESE TERMS OF SERVICE CAREFULLY. THESE TERMS OF SERVICE SETS FORTH 
 class APITest(TestCase):
 
     @staticmethod
-    def mock_request(method='POST',
-                     content_type='application/json',
-                     META={'HTTP_X_ACCESS_TOKEN': 'qwerty'},
-                     body='{"text": "Hello, world!  My name is Gevorg. I am fond of sentence splitting."}'):
+    def mock_request(method=None, content_type=None, META=None, body=None):
         request = mock.MagicMock()
-        request.method = method
-        request.content_type = content_type
-        request.META = META
-        request.body = body
+        request.method = method or 'POST'
+        request.content_type = content_type or 'application/json'
+        request.META = META or {'HTTP_X_ACCESS_TOKEN': 'qwerty'}
+        request.body = body or '{"text": "Hello, world!  My name is Gevorg. I am fond of sentence splitting."}'
         return request
 
     def assert_failure(self, response, expected_data, expected_status_code):

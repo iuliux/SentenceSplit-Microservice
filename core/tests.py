@@ -6,8 +6,8 @@ import mock
 from django.http import JsonResponse
 from django.test import TestCase
 
-from .utils import split_sentences
-from .views import sentence_split
+from core.utils import is_title, split_sentences
+from core.views import sentence_split
 
 
 class SentenceSplitTest(TestCase):
@@ -128,19 +128,53 @@ PLEASE READ THESE TERMS OF SERVICE CAREFULLY. THESE TERMS OF SERVICE SETS FORTH 
         self.assertEqual(len(sentences), 6)
         self.assertEqual(''.join(sentences), txt)
 
+    def check_is_title(self, clause, expected):
+        actual = is_title(clause)
+        self.assertEqual(expected, actual)
+
+    def test_is_title(self):
+        self.check_is_title(' \t \n \t ', False)
+        self.check_is_title('', False)
+
+        self.check_is_title('London is the capital of Great Britain', False)
+
+        self.check_is_title('Python for Biologists', True)
+        self.check_is_title('Learn Python the Hard Way', True)
+        self.check_is_title('Hacking Secret Ciphers with Python', True)
+        self.check_is_title('Automate the Boring Stuff with Python', True)
+
+        for clause in ['Definitions',
+                       'Billing and Payment Terms',
+                       'Description of Services, Rates and Charges',
+                       'Use of the Service Offerings',
+                       'Security and Data Privacy',
+                       'Owner\'s Representative; Inspection of Work',
+                       'Dispute Resolution and Governing Law',
+                       'Disclaimers and Limitations of Liability',
+                       'Compliance with Applicable Laws',
+                       'Ownership and Intellectual Property Rights',
+                       'Account Termination Policy',
+                       'Copyright Notice']:
+
+            for bullet in ['1', 'iv', 'G', 'c', '7', 'XI', 'v', '9', 'N']:
+                self.check_is_title('\t%s. %s\n' % (bullet, clause), True)
+                self.check_is_title('\t%s. %s:\n' % (bullet, clause), False)
+                self.check_is_title('\t%s. \n' % bullet, False)
+
+            self.check_is_title(clause, True)
+            self.check_is_title(clause.lower(), False)
+            self.check_is_title(clause.upper(), len(clause.split()) <= 4)
+
 
 class APITest(TestCase):
 
     @staticmethod
-    def mock_request(method='POST',
-                     content_type='application/json',
-                     META={'HTTP_X_ACCESS_TOKEN': 'qwerty'},
-                     body='{"text": "Hello, world!  My name is Gevorg. I am fond of sentence splitting."}'):
+    def mock_request(method=None, content_type=None, META=None, body=None):
         request = mock.MagicMock()
-        request.method = method
-        request.content_type = content_type
-        request.META = META
-        request.body = body
+        request.method = method or 'POST'
+        request.content_type = content_type or 'application/json'
+        request.META = META or {'HTTP_X_ACCESS_TOKEN': 'qwerty'}
+        request.body = body or '{"text": "Hello, world!  My name is Gevorg. I am fond of sentence splitting."}'
         return request
 
     def assert_failure(self, response, expected_data, expected_status_code):

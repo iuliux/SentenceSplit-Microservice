@@ -2,7 +2,9 @@ from django.contrib import admin
 from django.db import models
 from django.forms import TextInput
 
-from .models import AccessToken, MAX_TOKEN_NAME_LENGTH, MAX_TOKEN_VALUE_LENGTH
+from core.models import (
+    MAX_TOKEN_NAME_LENGTH, MAX_TOKEN_VALUE_LENGTH, AccessToken
+)
 
 
 TEXT_INPUT_SIZE = max(MAX_TOKEN_NAME_LENGTH, MAX_TOKEN_VALUE_LENGTH)

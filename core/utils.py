@@ -66,29 +66,35 @@ def is_title(sentence):
     Punctuation characters at the end aren't allowed.
 
     A (non-empty) sentence is considered to be a title, if it consists at most
-    MAX_TITLE_LENGTH words, and the number of capitalized words (containing the
-    main meaning, i.e. "main" words) exceeds the number of "auxiliary" (i.e.
-    non-capitalized) words.
+    MAX_MAIN_WORDS_COUNT capitalized words (containing the main meaning,
+    i.e. "main" words). In addition to the "main" words, some "auxiliary"
+    (i.e. non-capitalized) words are also allowed, but only if they are short
+    enough (i.e. up to MAX_AUX_WORD_LENGTH characters in length). The
+    "auxiliary" words are assumed to be some conjunctions, determiners or
+    prepositions.
 
     E.g.: "Terms of Service", "Terms of Use", etc.
     """
-    MAX_TITLE_LENGTH = 3
+    MAX_MAIN_WORDS_COUNT = 4
+    MAX_AUX_WORD_LENGTH = 4
 
     sentence = sentence.strip()
     if not sentence:
         return False
     if sentence[-1] in (',', ';', ':'):
         return False
-    capitalized_words_count = total_words_count = 0
+    capitalized_words_count = 0
     words = sentence.split()
     for index, word in enumerate(words):
         if index == 0 and word.endswith('.') and is_bullet(word[:-1]):
             continue
-        if word[0].isupper():
+        if word[0].isupper():  # "main" word
             capitalized_words_count += 1
-        total_words_count += 1
-    return total_words_count <= MAX_TITLE_LENGTH and \
-        2 * capitalized_words_count > total_words_count
+        elif len(word) <= MAX_AUX_WORD_LENGTH:  # "auxiliary" word
+            continue
+        else:
+            return False
+    return 1 <= capitalized_words_count <= MAX_MAIN_WORDS_COUNT
 
 
 def split_sentences(text):

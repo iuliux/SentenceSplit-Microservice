@@ -39,6 +39,14 @@ def is_abbreviation(s_p, s, s_n):
     if _is_name(s_p) and _is_name(s, max_len=1) and _is_name(s_n):
         return True
 
+    # Other edge cases
+
+    if s == 'v.':
+        return True
+
+    if (s, s_n) == ('U.', 'S.'):
+        return True
+
     return False
 
 

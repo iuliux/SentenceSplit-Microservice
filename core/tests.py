@@ -93,7 +93,7 @@ PLEASE READ THESE TERMS OF SERVICE CAREFULLY. THESE TERMS OF SERVICE SETS FORTH 
             sentences = split_sentences(txt)
             self.assertEqual(len([s for s in sentences if s]), 1)
 
-    def test_not_splitting_on_abbreviations(self):
+    def test_not_splitting_on_name_abbreviations(self):
         text = u'Roy T. Englert, Jr., argued the cause for petitioner. With him on the briefs was Melissa B. Rogers. Pamela Y. Price argued the cause for respondent. With her on the brief were Howard J. Moore, Jr., and William McNeill III. Austin C. Schlick argued the cause for the United States as amicus curiae urging reversal. With him on the brief were Solicitor General Olson, Acting Assistant Attorney General Schiffer, Deputy Solicitor General Clement, Marleigh D. Dover, and John C. Hoyle...'
         expected_sentences = [
             u'Roy T. Englert, Jr., argued the cause for petitioner. ',
@@ -102,6 +102,16 @@ PLEASE READ THESE TERMS OF SERVICE CAREFULLY. THESE TERMS OF SERVICE SETS FORTH 
             u'With her on the brief were Howard J. Moore, Jr., and William McNeill III. ',
             u'Austin C. Schlick argued the cause for the United States as amicus curiae urging reversal. ',
             u'With him on the brief were Solicitor General Olson, Acting Assistant Attorney General Schiffer, Deputy Solicitor General Clement, Marleigh D. Dover, and John C. Hoyle...',
+        ]
+        actual_sentences = split_sentences(text)
+        self.assertEqual(expected_sentences, actual_sentences)
+
+    def test_not_splitting_on_particular_abbreviations(self):
+        text = u'The Court\'s holding does not leave employers defenseless when a plaintiff unreasonably delays filing a charge. The filing period is subject to waiver, estoppel, and equitable tolling when equity so requires, Zipes, supra, at 398, and an employer may raise a laches defense if the plaintiff unreasonably delays in filing and as a result harms the defendant, see, e. g., Albemarle Paper Co. v. Moody, 422 U. S. 405, 424-425. Pp. 121-122.'
+        expected_sentences = [
+            u'The Court\'s holding does not leave employers defenseless when a plaintiff unreasonably delays filing a charge. ',
+            u'The filing period is subject to waiver, estoppel, and equitable tolling when equity so requires, Zipes, supra, at 398, and an employer may raise a laches defense if the plaintiff unreasonably delays in filing and as a result harms the defendant, see, e. g., Albemarle Paper Co. v. Moody, 422 U. S. 405, 424-425. ',
+            u'Pp. 121-122.',
         ]
         actual_sentences = split_sentences(text)
         self.assertEqual(expected_sentences, actual_sentences)

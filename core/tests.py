@@ -85,11 +85,26 @@ PLEASE READ THESE TERMS OF SERVICE CAREFULLY. THESE TERMS OF SERVICE SETS FORTH 
             'Beagle Inc. COMMUNICATIONS PROVIDES SERVICES',
             u'This Master Subscription Agreement (the "Agreement") is entered into as of ____________, 2015 (“Effective Date”) by and between Axonify Inc., a Canadian Corporation having its registered office at 460 Phillip St. Suite 300, Waterloo, ON N2L 5J2 ("Axonify Inc.") and Shinydocs Corporation having its principal place of business at 108 Ahrens St W #8b, Kitchener, ON N2H 4C3 ("Customer").',
             u'This Master Services Agreement (the “Agreement” or "MSA") describes the terms on which Blackfoot Communications, Inc. (“Blackfoot”), provides services to its customers ("Customer").',
+            u'The Subscriber acknowledges that the Securities have not been and will not be registered under the United States Securities Act of 1933, as amended, (the “U.S. Securities Act”) or the securities laws of any state and that these securities may not be offered or sold in the United States without registration under the U.S. Securities Act or compliance with requirements of an exemption from registration, and the applicable laws of all applicable states or an exemption from such registration requirements is available.'
+            u'The Subscriber acknowledges that the Corporation has no present intention of filing a registration statement under the U.S. Securities Act in respect of the Securities.'
         ]
 
         for txt in texts:
             sentences = split_sentences(txt)
             self.assertEqual(len([s for s in sentences if s]), 1)
+
+    def test_not_splitting_on_abbreviations(self):
+        text = u'Roy T. Englert, Jr., argued the cause for petitioner. With him on the briefs was Melissa B. Rogers. Pamela Y. Price argued the cause for respondent. With her on the brief were Howard J. Moore, Jr., and William McNeill III. Austin C. Schlick argued the cause for the United States as amicus curiae urging reversal. With him on the brief were Solicitor General Olson, Acting Assistant Attorney General Schiffer, Deputy Solicitor General Clement, Marleigh D. Dover, and John C. Hoyle...'
+        expected_sentences = [
+            u'Roy T. Englert, Jr., argued the cause for petitioner. ',
+            u'With him on the briefs was Melissa B. Rogers. ',
+            u'Pamela Y. Price argued the cause for respondent. ',
+            u'With her on the brief were Howard J. Moore, Jr., and William McNeill III. ',
+            u'Austin C. Schlick argued the cause for the United States as amicus curiae urging reversal. ',
+            u'With him on the brief were Solicitor General Olson, Acting Assistant Attorney General Schiffer, Deputy Solicitor General Clement, Marleigh D. Dover, and John C. Hoyle...',
+        ]
+        actual_sentences = split_sentences(text)
+        self.assertEqual(expected_sentences, actual_sentences)
 
     def test_not_merging_wanted_splits(self):
         """ Assert the merger is not too permisive """

@@ -33,7 +33,9 @@ def is_abbreviation(s_p, s, s_n):
     # No length restriction by default
     def _is_name(s, max_len=float('inf')):
         s = s.strip('.,:;')
-        return 0 < len(s) <= max_len and s[0].isupper() and s.isalnum() and not s.isdigit()
+        return 0 < len(s) <= max_len and s[0].isupper() and (
+            s.isalnum() and not s.isdigit() if max_len == 1 else True
+        )
 
     # Name abbreviation, e.g. John D. Smith
     if _is_name(s_p) and _is_name(s, max_len=1) and _is_name(s_n):

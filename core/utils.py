@@ -6,17 +6,53 @@ import re
 all_roman_re = re.compile(r'[ivxIVX]+$')
 abc_bullet_re = re.compile(r'[a-zA-Z]$')
 digit_bullet_re = re.compile(r'([0-9]+\.)*[0-9]+$')
+quotes = u'"\'“”'
 non_sentence_ends = [
     'inc.', 'ltd.', 'llc.',
     'et.', 'al.', 'etc.',
     'mr.', 'ms.', 'mrs.',
+    'u.s.',
 ]
 
 
 def is_bullet(s):
+    if not s.endswith('.'):
+        return False
+    s = s[:-1]
     return any([all_roman_re.match(s),
                 abc_bullet_re.match(s),
                 digit_bullet_re.match(s)])
+
+
+def is_abbreviation(s_p, s, s_n):
+    """
+    Checks whether the word `s` is an abbreviation using its context,
+    i.e. the previous word `s_p` and the next word `s_n`.
+    """
+
+    # No length restriction by default
+    def _is_name(s, max_len=float('inf')):
+        s = s.strip('.,:;')
+        return 0 < len(s) <= max_len and s[0].isupper() and s.isalpha()
+
+    # Name abbreviation, e.g. John D. Smith
+    if _is_name(s_p) and _is_name(s, max_len=1) and _is_name(s_n):
+        return True
+
+    # Other special cases
+
+    if s == 'v.':
+        return True
+
+    if (s, s_n) == ('U.', 'S.'):
+        return True
+
+    return False
+
+
+def is_non_sentence_end(s):
+    s = s.strip(quotes).lower()
+    return s in non_sentence_ends
 
 
 def merge_bad_sentsplits(sentences):
@@ -27,12 +63,16 @@ def merge_bad_sentsplits(sentences):
         if sent_after.strip() == '':
             to_merge = True
         else:
-            csent = sent.strip().lower().split('\n')[-1]
-            toksent = csent.split()
-            if len(toksent) == 1 and toksent[0].endswith('.') and is_bullet(toksent[0][:-1]):
-                to_merge = True
-            else:
-                to_merge |= len(toksent) > 0 and toksent[-1] in non_sentence_ends
+            toks = sent.strip().split('\n')[-1].split()
+            if len(toks) > 0:
+                if len(toks) == 1 and is_bullet(toks[0]):
+                    to_merge = True
+                elif is_non_sentence_end(toks[-1]):
+                    to_merge = True
+                elif len(toks) > 1:
+                    toks_after = sent_after.strip().split('\n')[0].split()
+                    if len(toks_after) > 0:
+                        to_merge = is_abbreviation(toks[-2], toks[-1], toks_after[0])
 
         if to_merge:
             return [sent + sent_after]
@@ -86,7 +126,7 @@ def is_title(sentence):
     capitalized_words_count = 0
     words = sentence.split()
     for index, word in enumerate(words):
-        if index == 0 and word.endswith('.') and is_bullet(word[:-1]):
+        if index == 0 and is_bullet(word):
             continue
         if word[0].isupper():  # "main" word
             capitalized_words_count += 1

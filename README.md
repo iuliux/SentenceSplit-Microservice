@@ -1,7 +1,5 @@
 # SentenceSplit-Microservice
 
-[![CircleCI](https://circleci.com/gh/BeagleInc/SentenceSplit-Microservice.svg?style=svg&circle-token=7c554f769570976c81e7d7523c0dd0059d9e27d1)](https://circleci.com/gh/BeagleInc/SentenceSplit-Microservice)
-
 API for sentence splitting.
 
 ## Usage

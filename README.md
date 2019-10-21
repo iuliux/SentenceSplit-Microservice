@@ -4,9 +4,6 @@
 
 API for sentence splitting.
 
-Current working environments:
-- `dev`: https://kyhk5y2ub3.execute-api.us-west-2.amazonaws.com/dev
-
 ## Usage
 - The API accepts only `POST` requests, expects `JSON` input and produces `JSON` output.
 - Make sure to also provide some value for `x-access-token` header, otherwise the access will be forbidden (ask the administrators for a valid token).
